@@ -4,11 +4,6 @@ from core.file_manager import FileManager
 
 
 class Product:
-    """
-    NOTE: same problem as User -- the model is mixed up with
-    SQL, CSV parsing and the storage switch. Copy-pasted logic.
-    """
-
     def __init__(self, id, name, price):
         self.id = id
         self.name = name

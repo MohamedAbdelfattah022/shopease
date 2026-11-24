@@ -1,6 +1,5 @@
 from config.database_config import STORAGE
-from core.db_connection import DatabaseConnection
-from core.file_manager import FileManager
+from repositories.user_repository import MySQLUserRepository, CSVUserRepository
 
 
 class User:
@@ -10,37 +9,39 @@ class User:
         self.email = email
 
     @staticmethod
-    def get_all():
+    def _repo():
         if STORAGE == "mysql":
-            db = DatabaseConnection().get_connection()
-            cursor = db.cursor(dictionary=True)
-            cursor.execute("SELECT id, name, email FROM users")
+            return MySQLUserRepository()
 
-            users = []
-            for r in cursor.fetchall():
-                users.append(User(r["id"], r["name"], r["email"]))
-            return users
+        return CSVUserRepository()
 
-        rows = FileManager().read_csv("data/users.csv")
+    @staticmethod
+    def get_all():
+        rows = User._repo().get_all()
         users = []
-        for r in rows:
-            users.append(User(int(r["id"]), r["name"], r["email"]))
+
+        for row in rows:
+            user = User(
+                row["id"],
+                row["name"],
+                row["email"]
+            )
+
+            users.append(user)
+
         return users
 
     @staticmethod
     def get_by_id(id):
-        if STORAGE == "mysql":
-            db = DatabaseConnection().get_connection()
-            cursor = db.cursor(dictionary=True)
-            cursor.execute("SELECT id, name, email FROM users WHERE id=%s", (id,))
+        row = User._repo().get_by_id(id)
 
-            r = cursor.fetchone()
-            if r:
-                return User(r["id"], r["name"], r["email"])
-            return None
+        if row:
+            user = User(
+                row["id"],
+                row["name"],
+                row["email"]
+            )
 
-        rows = FileManager().read_csv("data/users.csv")
-        for r in rows:
-            if int(r["id"]) == id:
-                return User(int(r["id"]), r["name"], r["email"])
+            return user
+
         return None
