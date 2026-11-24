@@ -1,5 +1,4 @@
-from config.database_config import STORAGE
-from repositories.user_repository import MySQLUserRepository, CSVUserRepository
+from repositories.repository_factory import RepositoryFactory
 
 
 class User:
@@ -9,15 +8,9 @@ class User:
         self.email = email
 
     @staticmethod
-    def _repo():
-        if STORAGE == "mysql":
-            return MySQLUserRepository()
-
-        return CSVUserRepository()
-
-    @staticmethod
     def get_all():
-        rows = User._repo().get_all()
+        repo = RepositoryFactory.get_repository("user")
+        rows = repo.get_all()
         users = []
 
         for row in rows:
@@ -33,7 +26,8 @@ class User:
 
     @staticmethod
     def get_by_id(id):
-        row = User._repo().get_by_id(id)
+        repo = RepositoryFactory.get_repository("user")
+        row = repo.get_by_id(id)
 
         if row:
             user = User(
